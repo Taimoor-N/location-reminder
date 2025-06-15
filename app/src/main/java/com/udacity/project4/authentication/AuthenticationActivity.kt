@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import com.firebase.ui.auth.AuthMethodPickerLayout
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
@@ -44,8 +45,6 @@ class AuthenticationActivity : AppCompatActivity() {
             onSignInResult(result)
         }
 
-        // TODO: a bonus is to customize the sign in flow to look nice using :
-        //https://github.com/firebase/FirebaseUI-Android/blob/master/auth/README.md#custom-layout
     }
 
     private fun startFirebaseUIAuth() {
@@ -53,9 +52,15 @@ class AuthenticationActivity : AppCompatActivity() {
             AuthUI.IdpConfig.EmailBuilder().build(),
             AuthUI.IdpConfig.GoogleBuilder().build()
         )
+        val customLayout = AuthMethodPickerLayout
+            .Builder(R.layout.layout_firebase_ui_login)
+            .setEmailButtonId(R.id.tv_login_btn_email)
+            .setGoogleButtonId(R.id.tv_login_btn_google)
+            .build()
         val signInIntent = AuthUI.getInstance()
             .createSignInIntentBuilder()
             .setAvailableProviders(providers)
+            .setAuthMethodPickerLayout(customLayout)
             .build()
 
         signInLauncher.launch(signInIntent)
