@@ -13,13 +13,18 @@ import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Lifecycle
+import androidx.navigation.fragment.findNavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PointOfInterest
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
@@ -36,6 +41,10 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     private lateinit var map: GoogleMap
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<Array<String>>
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+
+    private var selectedMarker: Marker? = null
+    private var selectedPoi : PointOfInterest? = null
+    private var selectedLatLng : LatLng? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,11 +68,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(this)
 
-        // TODO: add style to the map
-        // TODO: put a marker to location that the user selected
-
-        // TODO: call this function after the user confirms on the selected location
-        onLocationSelected()
+        enableConfirmSelectionBtnOnClickListener()
         return binding.root
     }
 
@@ -71,8 +76,12 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         map = googleMap
         googleMap.uiSettings.isZoomControlsEnabled = true
         googleMap.uiSettings.isCompassEnabled = true
-        enableMyLocation()
         googleMap.setPadding(0, 10, 0, 0)
+
+        enableMyLocation()
+        moveCameraToMyLocation()
+        setMapLongClick(map)
+        setPoiClick(map)
     }
 
     private fun addMenuItems() {
@@ -109,9 +118,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     }
 
     private fun onLocationSelected() {
-        // TODO: When the user confirms on the selected location,
-        //  send back the selected location details to the view model
-        //  and navigate back to the previous fragment to save the reminder and add the geofence
+        findNavController().popBackStack()
     }
 
     /**
@@ -169,6 +176,38 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         }
     }
 
+    private fun setMapLongClick(map: GoogleMap) {
+        map.setOnMapLongClickListener { latLng ->
+            selectedMarker?.remove()
+            selectedMarker = map.addMarker(
+                MarkerOptions()
+                    .position(latLng)
+                    .title(getString(R.string.dropped_pin))
+                    .snippet(getString(R.string.lat_long_snippet, selectedLatLng?.latitude, selectedLatLng?.longitude))
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
+            )
+            selectedMarker?.showInfoWindow()
+            selectedLatLng = latLng
+            selectedPoi = null
+            binding.confirmSelectionButton.isEnabled = true
+        }
+    }
+
+    private fun setPoiClick(map: GoogleMap) {
+        map.setOnPoiClickListener { poi ->
+            selectedMarker?.remove()
+            selectedMarker = map.addMarker(
+                MarkerOptions()
+                    .position(poi.latLng)
+                    .title(poi.name)
+            )
+            selectedMarker?.showInfoWindow()
+            selectedPoi = poi
+            selectedLatLng = null
+            binding.confirmSelectionButton.isEnabled = true
+        }
+    }
+
     @Suppress("MissingPermission") // Suppress since we check permissions before calling
     private fun moveCameraToMyLocation() {
         if (hasLocationPermission()) {
@@ -192,6 +231,24 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                 }
         } else {
             enableMyLocation()
+        }
+    }
+
+    private fun enableConfirmSelectionBtnOnClickListener() {
+        binding.confirmSelectionButton.setOnClickListener {
+            if (selectedPoi != null) {
+                binding.viewModel?.selectedPOI?.value = selectedPoi
+                binding.viewModel?.reminderSelectedLocationStr?.value = selectedPoi?.name
+                onLocationSelected()
+            } else if (selectedLatLng != null) {
+                binding.viewModel?.latitude?.value = selectedLatLng?.latitude
+                binding.viewModel?.longitude?.value = selectedLatLng?.longitude
+                binding.viewModel?.reminderSelectedLocationStr?.value =
+                    getString(R.string.lat_long_snippet, selectedLatLng?.latitude, selectedLatLng?.longitude)
+                onLocationSelected()
+            } else {
+                Toast.makeText(context, getString(R.string.select_location), Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

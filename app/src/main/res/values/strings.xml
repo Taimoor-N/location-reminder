@@ -13,6 +13,8 @@
     <string name="location_required_error">Location services must be enabled to use the app</string>
     <string name="login">Login</string>
     <string name="logout">Logout</string>
+    <string name="map_confirm_selection">Confirm Selection</string>
+    <string name="map_id">4955fb16e8e3d49658a00fc1</string>
     <string name="no_data">No Data</string>
     <string name="normal_map">Normal Map</string>
     <string name="notification_channel_description">Geofence status notification</string>
