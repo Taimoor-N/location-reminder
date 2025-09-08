@@ -1,10 +1,13 @@
 package com.udacity.project4.utils
 
 import android.view.View
+import android.widget.EditText
 import androidx.databinding.BindingAdapter
+import androidx.databinding.InverseBindingAdapter
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.udacity.project4.base.BaseRecyclerViewAdapter
+import kotlin.text.toFloatOrNull
 
 object BindingAdapters {
 
@@ -43,4 +46,28 @@ object BindingAdapters {
             }
         }
     }
+
+    @BindingAdapter("android:doubleText")
+    @JvmStatic
+    fun setDoubleText(view: EditText, value: Double?) {
+        val currentText = view.text.toString()
+        val newValue = value?.toString() ?: ""
+        if (currentText != newValue) {
+            val currentDouble = currentText.toDoubleOrNull()
+            if (currentDouble != value) {
+                view.setText(newValue)
+            }
+        }
+    }
+
+    @InverseBindingAdapter(attribute = "android:doubleText", event = "android:textAttrChanged")
+    @JvmStatic
+    fun getDoubleText(view: EditText): Double? {
+        return try {
+            view.text.toString().toDoubleOrNull()
+        } catch (e: NumberFormatException) {
+            null
+        }
+    }
+
 }
