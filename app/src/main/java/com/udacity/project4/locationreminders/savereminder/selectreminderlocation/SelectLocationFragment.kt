@@ -189,7 +189,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             selectedMarker?.showInfoWindow()
             selectedLatLng = latLng
             selectedPoi = null
-            binding.confirmSelectionButton.isEnabled = true
         }
     }
 
@@ -204,7 +203,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             selectedMarker?.showInfoWindow()
             selectedPoi = poi
             selectedLatLng = null
-            binding.confirmSelectionButton.isEnabled = true
         }
     }
 
