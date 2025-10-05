@@ -237,6 +237,8 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             if (selectedPoi != null) {
                 binding.viewModel?.selectedPOI?.value = selectedPoi
                 binding.viewModel?.reminderSelectedLocationStr?.value = selectedPoi?.name
+                binding.viewModel?.latitude?.value = selectedPoi?.latLng?.latitude
+                binding.viewModel?.longitude?.value = selectedPoi?.latLng?.longitude
                 onLocationSelected()
             } else if (selectedLatLng != null) {
                 binding.viewModel?.latitude?.value = selectedLatLng?.latitude
