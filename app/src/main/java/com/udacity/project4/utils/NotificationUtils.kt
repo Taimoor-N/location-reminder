@@ -37,8 +37,14 @@ fun sendNotification(context: Context, reminderDataItem: ReminderDataItem) {
     val stackBuilder = TaskStackBuilder.create(context)
         .addParentStack(ReminderDescriptionActivity::class.java)
         .addNextIntent(intent)
+
+    var flags = PendingIntent.FLAG_UPDATE_CURRENT
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        flags = flags or PendingIntent.FLAG_IMMUTABLE
+    }
+
     val notificationPendingIntent = stackBuilder
-        .getPendingIntent(getUniqueId(), PendingIntent.FLAG_UPDATE_CURRENT)
+        .getPendingIntent(getUniqueId(), flags)
 
 //    build the notification object with the data to be shown
     val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
