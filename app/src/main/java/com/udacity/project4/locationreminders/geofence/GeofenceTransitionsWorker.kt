@@ -46,6 +46,38 @@ class GeofenceTransitionsWorker(appContext: Context, workerParams: WorkerParamet
     }
 
     private suspend fun sendNotificationForGeofences(triggeringGeofenceIds: List<String>) {
+        for (requestId in triggeringGeofenceIds) {
+            if (requestId.isEmpty()) {
+                Log.w(TAG, "Skipping geofence with empty requestId.")
+                continue
+            }
 
+            Log.d(TAG, "Processing geofence with requestId: $requestId")
+
+            // Get the reminder with the request id
+            val result = remindersLocalRepository.getReminder(requestId)
+            if (result is com.udacity.project4.locationreminders.data.dto.Result.Success<ReminderDTO>) {
+                val reminderDTO = result.data
+                Log.d(TAG, "Reminder found: ${reminderDTO.title}")
+                // Send a notification to the user with the reminder details
+                sendNotification(
+                    applicationContext, // Use applicationContext from CoroutineWorker
+                    ReminderDataItem(
+                        reminderDTO.title,
+                        reminderDTO.description,
+                        reminderDTO.location,
+                        reminderDTO.latitude,
+                        reminderDTO.longitude,
+                        reminderDTO.radius, // Assuming radius is stored and retrieved correctly
+                        reminderDTO.id
+                    )
+                )
+            } else {
+                Log.e(TAG, "Error retrieving reminder for requestId: $requestId.")
+                if (result is com.udacity.project4.locationreminders.data.dto.Result.Error) {
+                    Log.e(TAG, "Error message: ${result.message}")
+                }
+            }
+        }
     }
 }
