@@ -15,5 +15,9 @@ data class ReminderDataItem(
     var latitude: Double?,
     var longitude: Double?,
     var radius: Double?,
-    val id: String = UUID.randomUUID().toString()
+    val id: String = generateReminderId()
 ) : Parcelable
+
+fun generateReminderId() : String {
+    return UUID.randomUUID().toString()
+}

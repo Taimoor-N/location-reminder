@@ -33,6 +33,13 @@ interface RemindersDao {
     suspend fun saveReminder(reminder: ReminderDTO)
 
     /**
+     * Delete a reminder by its id.
+     * @param reminderId the id of the reminder to be deleted.
+     */
+    @Query("DELETE FROM reminders WHERE entry_id = :reminderId")
+    suspend fun deleteReminder(reminderId: String)
+
+    /**
      * Delete all reminders.
      */
     @Query("DELETE FROM reminders")

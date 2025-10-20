@@ -81,5 +81,18 @@
             app:layout_constraintTop_toBottomOf="@id/reminderLocation"
             tools:text="100.00 m" />
 
+        <Button
+            android:id="@+id/deleteReminderButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/margin_normal"
+            android:backgroundTint="@color/colorAccent"
+            android:gravity="center"
+            android:text="@string/delete_reminder"
+            android:textColor="@color/white"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

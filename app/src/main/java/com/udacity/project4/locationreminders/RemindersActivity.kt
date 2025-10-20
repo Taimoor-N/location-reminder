@@ -7,6 +7,9 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.udacity.project4.R
 import com.udacity.project4.databinding.ActivityRemindersBinding
+import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
+import com.udacity.project4.locationreminders.savereminder.SaveReminderFragment
+import com.udacity.project4.utils.getParcelableExtraCompat
 
 /**
  * The RemindersActivity that holds the reminders fragments
@@ -23,6 +26,16 @@ class RemindersActivity : AppCompatActivity() {
 
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         navController = navHostFragment.navController
+
+        // Check if the activity was started with the intention to edit a reminder
+        if (intent.hasExtra(SaveReminderFragment.EXTRA_EDIT_REMINDER)) {
+            val reminderDataItem = intent.getParcelableExtraCompat<ReminderDataItem>(SaveReminderFragment.EXTRA_EDIT_REMINDER)
+            val bundle = Bundle().apply {
+                putParcelable(SaveReminderFragment.EXTRA_EDIT_REMINDER, reminderDataItem)
+            }
+            // Navigate to the SaveReminderFragment with the reminder data as an argument
+            navController.navigate(R.id.saveReminderFragment, bundle)
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

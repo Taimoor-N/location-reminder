@@ -2,14 +2,22 @@ package com.udacity.project4.locationreminders
 
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
-import android.os.Parcelable
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Lifecycle
 import com.udacity.project4.R
 import com.udacity.project4.databinding.ActivityReminderDescriptionBinding
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
+import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
+import com.udacity.project4.locationreminders.savereminder.SaveReminderFragment
+import com.udacity.project4.utils.getParcelableExtraCompat
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 /**
  * Activity that displays the reminder details after the user clicks on the notification
@@ -17,6 +25,8 @@ import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 class ReminderDescriptionActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityReminderDescriptionBinding
+    private val viewModel: RemindersListViewModel by viewModel()
+    private var reminderDataItem: ReminderDataItem? = null
 
     companion object {
         private const val EXTRA_REMINDER_DATA_ITEM = "EXTRA_REMINDER_DATA_ITEM"
@@ -33,24 +43,67 @@ class ReminderDescriptionActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_reminder_description)
 
-        val reminder = intent.getParcelableExtraCompat<ReminderDataItem>(EXTRA_REMINDER_DATA_ITEM)
-        if (reminder != null) {
-            binding.reminderDataItem = reminder
+        // Enable the back button on the toolbar
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        reminderDataItem = intent.getParcelableExtraCompat(EXTRA_REMINDER_DATA_ITEM)
+        if (reminderDataItem != null) {
+            binding.reminderDataItem = reminderDataItem
+        } else {
+            // If no reminder data, close the activity
+            finish()
+            return
         }
         binding.executePendingBindings()
-    }
-}
 
-/**
- * This extension function checks the Android version and uses the appropriate
- * getParcelableExtra method to avoid the NoSuchMethodError on devices
- * running Android versions older than TIRAMISU (API 33).
- */
-inline fun <reified T : Parcelable> Intent.getParcelableExtraCompat(key: String): T? {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        getParcelableExtra(key, T::class.java)
-    } else {
-        @Suppress("DEPRECATION")
-        getParcelableExtra(key) as? T
+        binding.deleteReminderButton.setOnClickListener {
+            showDeleteConfirmationDialog()
+        }
+
+        addMenu()
+    }
+
+    private fun addMenu() {
+        addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.reminder_description_menu, menu)
+            }
+
+            override fun onMenuItemSelected(item: MenuItem): Boolean {
+                return when (item.itemId) {
+                    android.R.id.home -> {
+                        onBackPressedDispatcher.onBackPressed()
+                        true
+                    }
+                    R.id.action_edit -> {
+                        // Navigate to SaveReminderFragment to edit the reminder
+                        val intent = Intent(this@ReminderDescriptionActivity, RemindersActivity::class.java)
+                        intent.putExtra(SaveReminderFragment.EXTRA_EDIT_REMINDER, reminderDataItem)
+                        startActivity(intent)
+                        finish() // Finish this activity so the user returns to the list after saving
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }, this, Lifecycle.State.RESUMED)
+    }
+
+    private fun showDeleteConfirmationDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.delete_reminder)
+            .setMessage(R.string.delete_confirmation_message)
+            .setPositiveButton(R.string.delete) { _, _ ->
+                deleteReminder()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun deleteReminder() {
+        reminderDataItem?.let {
+            viewModel.deleteReminder(it)
+            finish()
+        }
     }
 }
