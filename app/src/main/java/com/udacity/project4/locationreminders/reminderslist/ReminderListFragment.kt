@@ -89,7 +89,6 @@ class ReminderListFragment : BaseFragment() {
                 return when (item.itemId) {
                     R.id.logout -> {
                         logout()
-                        startActivity(Intent(requireContext(), AuthenticationActivity::class.java))
                         return true
                     }
                     else -> false
@@ -104,7 +103,7 @@ class ReminderListFragment : BaseFragment() {
             .signOut(context)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Toast.makeText(context, "Signed out successfully.", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(requireContext(), AuthenticationActivity::class.java))
                 } else {
                     Toast.makeText(context, "Sign out failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                     Log.e(TAG, "Sign out error: ${task.exception?.message}")
