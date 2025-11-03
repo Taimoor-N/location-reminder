@@ -1,11 +1,13 @@
 package com.udacity.project4.locationreminders.reminderslist
 
-import java.io.Serializable
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import java.util.*
 
 /**
  * data class acts as a data mapper between the DB and the UI
  */
+@Parcelize
 data class ReminderDataItem(
     var title: String?,
     var description: String?,
@@ -13,5 +15,9 @@ data class ReminderDataItem(
     var latitude: Double?,
     var longitude: Double?,
     var radius: Double?,
-    val id: String = UUID.randomUUID().toString()
-) : Serializable
+    val id: String = generateReminderId()
+) : Parcelable
+
+fun generateReminderId() : String {
+    return UUID.randomUUID().toString()
+}

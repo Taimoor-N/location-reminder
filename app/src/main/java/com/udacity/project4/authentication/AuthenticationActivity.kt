@@ -36,6 +36,11 @@ class AuthenticationActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_authentication)
 
+        // Check if the user is already signed in and navigate accordingly.
+        if (checkIfUserIsSignedIn()) {
+            return // Stop further execution if user is already signed in
+        }
+
         binding.authButton.setOnClickListener {
             startFirebaseUIAuth()
         }
@@ -45,6 +50,22 @@ class AuthenticationActivity : AppCompatActivity() {
             onSignInResult(result)
         }
 
+    }
+
+    /**
+     * Checks if a user is currently signed in with Firebase Auth.
+     * If they are, it navigates them to the RemindersActivity.
+     * @return true if the user is signed in, false otherwise.
+     */
+    private fun checkIfUserIsSignedIn(): Boolean {
+        if (FirebaseAuth.getInstance().currentUser != null) {
+            val intent = Intent(this, RemindersActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish() // Finish this activity so the user cannot navigate back to it
+            return true
+        }
+        return false
     }
 
     private fun startFirebaseUIAuth() {

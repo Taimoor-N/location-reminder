@@ -36,6 +36,20 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
     }
 
     /**
+     * Populates the ViewModel's LiveData fields with the data from an existing reminder.
+     * This is used when a user wants to edit a reminder.
+     * @param reminder The reminder data item to be edited.
+     */
+    fun populateWithReminder(reminder: ReminderDataItem) {
+        reminderTitle.value = reminder.title
+        reminderDescription.value = reminder.description
+        reminderSelectedLocationStr.value = reminder.location
+        latitude.value = reminder.latitude
+        longitude.value = reminder.longitude
+        radius.value = reminder.radius
+    }
+
+    /**
      * Validate the entered data then saves the reminder data to the DataSource
      */
     fun validateAndSaveReminder(reminderData: ReminderDataItem) {

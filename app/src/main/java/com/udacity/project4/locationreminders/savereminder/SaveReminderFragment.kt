@@ -33,6 +33,8 @@ import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSaveReminderBinding
 import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
+import com.udacity.project4.locationreminders.reminderslist.generateReminderId
+import com.udacity.project4.utils.getParcelableExtraCompat
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
 
@@ -42,12 +44,15 @@ class SaveReminderFragment : BaseFragment() {
         private const val TAG = "SaveReminderFragment"
         private const val GEOFENCE_DEFAULT_RADIUS_IN_METERS = 100.0
         internal const val ACTION_GEOFENCE_EVENT = "SaveReminderFragment.ACTION_GEOFENCE_EVENT"
+        // Key for passing reminder data for editing
+        const val EXTRA_EDIT_REMINDER = "EXTRA_EDIT_REMINDER"
     }
 
     // Get the view model this time as a single to be shared with the another fragment
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSaveReminderBinding
     private lateinit var geofencingClient: GeofencingClient
+    private var editReminderDataItem: ReminderDataItem? = null
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
@@ -100,6 +105,12 @@ class SaveReminderFragment : BaseFragment() {
         binding.viewModel = _viewModel
         geofencingClient = LocationServices.getGeofencingClient(requireActivity().applicationContext)
 
+        // Check for reminder data passed for editing
+        editReminderDataItem = activity?.intent?.getParcelableExtraCompat(EXTRA_EDIT_REMINDER)
+        if (editReminderDataItem != null) {
+            _viewModel.populateWithReminder(editReminderDataItem!!)
+        }
+
         return binding.root
     }
 
@@ -120,9 +131,16 @@ class SaveReminderFragment : BaseFragment() {
             val latitude = _viewModel.latitude.value
             val longitude = _viewModel.longitude.value
             val radius = _viewModel.radius.value ?: GEOFENCE_DEFAULT_RADIUS_IN_METERS
-            val reminderDataItem = ReminderDataItem(title, description, location, latitude, longitude, radius)
-            checkPermissionsAndStartGeofencing(reminderDataItem)
-            _viewModel.validateAndSaveReminder(reminderDataItem)
+            var reminderId = generateReminderId()
+            // Editing an existing reminder
+            if (editReminderDataItem != null) {
+                reminderId = editReminderDataItem!!.id
+            }
+
+            val reminderToSave = ReminderDataItem(title, description, location, latitude, longitude, radius, reminderId)
+
+            checkPermissionsAndStartGeofencing(reminderToSave)
+            _viewModel.validateAndSaveReminder(reminderToSave)
         }
     }
 

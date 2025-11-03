@@ -53,6 +53,19 @@ class RemindersListViewModel(
     }
 
     /**
+     * Deletes a specific reminder from the data source.
+     */
+    fun deleteReminder(reminder: ReminderDataItem) {
+        viewModelScope.launch {
+            dataSource.deleteReminder(reminder.id)
+            // After deletion, you might want to reload the reminders
+            // or simply remove the item from the current list if it's being observed.
+            // For simplicity, we can just reload.
+            loadReminders()
+        }
+    }
+
+    /**
      * Inform the user that there's not any data if the remindersList is empty
      */
     private fun invalidateShowNoData() {

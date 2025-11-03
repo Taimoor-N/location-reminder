@@ -15,6 +15,7 @@ import com.udacity.project4.authentication.AuthenticationActivity
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentRemindersBinding
+import com.udacity.project4.locationreminders.ReminderDescriptionActivity
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import com.udacity.project4.utils.setTitle
 import com.udacity.project4.utils.setup
@@ -67,8 +68,10 @@ class ReminderListFragment : BaseFragment() {
     }
 
     private fun setupRecyclerView() {
-        val adapter = RemindersListAdapter {}
-        // Setup the recycler view using the extension function
+        val adapter = RemindersListAdapter { reminder ->
+            val intent = ReminderDescriptionActivity.newIntent(requireContext(), reminder)
+            startActivity(intent)
+        }
         binding.reminderssRecyclerView.setup(adapter)
     }
 
@@ -86,7 +89,6 @@ class ReminderListFragment : BaseFragment() {
                 return when (item.itemId) {
                     R.id.logout -> {
                         logout()
-                        startActivity(Intent(requireContext(), AuthenticationActivity::class.java))
                         return true
                     }
                     else -> false
@@ -101,7 +103,7 @@ class ReminderListFragment : BaseFragment() {
             .signOut(context)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Toast.makeText(context, "Signed out successfully.", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(requireContext(), AuthenticationActivity::class.java))
                 } else {
                     Toast.makeText(context, "Sign out failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                     Log.e(TAG, "Sign out error: ${task.exception?.message}")
